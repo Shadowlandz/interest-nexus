@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -5,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import AnimatedIcon from "@/components/ui/AnimatedIcon";
 import Feed from "@/components/feed/Feed";
 import ProfileCard from "@/components/profile/ProfileCard";
+import FeaturedHighlights from "@/components/home/FeaturedHighlights";
+import CallToAction from "@/components/home/CallToAction";
 import { useAuth } from "@/contexts/AuthContext";
 import { BookOpen, Globe, Users, BookMarked, ChevronRight, Plus, ArrowUp } from "lucide-react";
 
@@ -87,10 +90,10 @@ export default function Index() {
             </div>
             
             <div className="flex-1 relative">
-              <div className="relative z-10 animate-float">
+              <div className="relative z-10">
                 <img 
-                  src="https://images.unsplash.com/photo-1599748989594-a1099854abc2?q=80&w=2670&auto=format&fit=crop"
-                  alt="People connecting" 
+                  src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&q=80"
+                  alt="Conectando pessoas através de tecnologia" 
                   className="rounded-2xl shadow-xl max-w-full h-auto"
                 />
               </div>
@@ -99,6 +102,14 @@ export default function Index() {
           </div>
         </div>
       </section>
+      
+      {/* Call to Action Section for non-logged in users */}
+      {!user && (
+        <CallToAction />
+      )}
+      
+      {/* Featured Highlights Section */}
+      <FeaturedHighlights />
       
       {/* Main Content */}
       <section className="py-16 px-4 bg-secondary/30">
