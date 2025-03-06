@@ -1,16 +1,25 @@
 
 import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bell, Menu, Search, X } from "lucide-react";
+import { Bell, Menu, Search, X, LogOut, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import AuthModal from "../auth/AuthModal";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,12 +34,12 @@ export default function Navbar() {
   };
 
   const handleLoginClick = () => {
-    setAuthModalOpen(true);
+    navigate("/auth");
   };
 
-  const handleLoginSuccess = () => {
-    setIsLoggedIn(true);
-    setAuthModalOpen(false);
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/");
   };
 
   const navLinks = [
@@ -38,6 +47,11 @@ export default function Navbar() {
     { title: "Comunidades", href: "/communities" },
     { title: "Premium", href: "/premium" },
   ];
+
+  const getInitials = (name: string) => {
+    if (!name) return "U";
+    return name.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
+  };
 
   return (
     <>
@@ -49,22 +63,22 @@ export default function Navbar() {
       >
         <div className="container flex items-center justify-between h-16 px-4 md:px-6">
           <div className="flex items-center gap-6">
-            <a href="/" className="flex items-center gap-2 text-xl font-semibold">
+            <Link to="/" className="flex items-center gap-2 text-xl font-semibold">
               <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-accent text-accent-foreground font-bold">
                 N
               </div>
               <span className="hidden sm:inline-block">Nexus</span>
-            </a>
+            </Link>
             
             <nav className="hidden md:flex items-center gap-6">
               {navLinks.map((link) => (
-                <a 
+                <Link 
                   key={link.title}
-                  href={link.href}
+                  to={link.href}
                   className="text-sm font-medium transition-colors hover:text-accent"
                 >
                   {link.title}
-                </a>
+                </Link>
               ))}
             </nav>
           </div>
@@ -79,16 +93,33 @@ export default function Navbar() {
               />
             </div>
             
-            {isLoggedIn ? (
+            {user ? (
               <>
                 <Button variant="ghost" size="icon" className="relative">
                   <Bell className="h-5 w-5" />
                   <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
                 </Button>
-                <Avatar className="h-9 w-9 transition-transform hover:scale-105">
-                  <AvatarImage src="https://i.pravatar.cc/150?u=user" />
-                  <AvatarFallback>U</AvatarFallback>
-                </Avatar>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Avatar className="h-9 w-9 transition-transform hover:scale-105 cursor-pointer">
+                      <AvatarImage src={profile?.avatar_url || undefined} />
+                      <AvatarFallback>{profile?.full_name ? getInitials(profile.full_name) : 'U'}</AvatarFallback>
+                    </Avatar>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate("/profile")}>
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Perfil</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Sair</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             ) : (
               <div className="flex items-center gap-2">
@@ -139,16 +170,16 @@ export default function Navbar() {
             
             <nav className="flex flex-col space-y-3">
               {navLinks.map((link) => (
-                <a 
+                <Link 
                   key={link.title}
-                  href={link.href}
+                  to={link.href}
                   className="text-sm font-medium py-2 transition-colors hover:text-accent"
                 >
                   {link.title}
-                </a>
+                </Link>
               ))}
               
-              {!isLoggedIn && (
+              {!user && (
                 <Button
                   onClick={handleLoginClick}
                   variant="ghost"
@@ -157,17 +188,20 @@ export default function Navbar() {
                   Entrar
                 </Button>
               )}
+              
+              {user && (
+                <Button
+                  onClick={handleLogout}
+                  variant="ghost"
+                  className="justify-start px-0 text-sm font-medium"
+                >
+                  Sair
+                </Button>
+              )}
             </nav>
           </div>
         </div>
       </header>
-      
-      {/* Auth Modal */}
-      <AuthModal 
-        isOpen={authModalOpen} 
-        onClose={() => setAuthModalOpen(false)}
-        onSuccess={handleLoginSuccess}
-      />
     </>
   );
 }

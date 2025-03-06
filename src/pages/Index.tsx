@@ -1,17 +1,17 @@
-
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import AnimatedIcon from "@/components/ui/AnimatedIcon";
 import Feed from "@/components/feed/Feed";
 import ProfileCard from "@/components/profile/ProfileCard";
-import AuthModal from "@/components/auth/AuthModal";
+import { useAuth } from "@/contexts/AuthContext";
 import { BookOpen, Globe, Users, BookMarked, ChevronRight, Plus, ArrowUp } from "lucide-react";
 
 export default function Index() {
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -20,11 +20,6 @@ export default function Index() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  const handleLoginSuccess = () => {
-    setIsLoggedIn(true);
-    setShowAuthModal(false);
-  };
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -52,7 +47,7 @@ export default function Index() {
                 <Button 
                   size="lg" 
                   className="bg-accent hover:bg-accent/90" 
-                  onClick={() => setShowAuthModal(true)}
+                  onClick={() => navigate("/auth")}
                 >
                   Começar agora
                   <ChevronRight className="ml-1 h-4 w-4" />
@@ -60,7 +55,7 @@ export default function Index() {
                 <Button 
                   size="lg" 
                   variant="outline"
-                  onClick={() => setShowAuthModal(true)}
+                  onClick={() => navigate("/auth")}
                 >
                   Entrar
                 </Button>
@@ -112,11 +107,11 @@ export default function Index() {
             {/* Left Sidebar */}
             <div className="w-full lg:w-1/4 space-y-6">
               <ProfileCard 
-                showSignup={!isLoggedIn} 
-                onSignup={() => setShowAuthModal(true)} 
+                showSignup={!user} 
+                onSignup={() => navigate("/auth")} 
               />
               
-              {isLoggedIn && (
+              {user && (
                 <div className="bg-card rounded-lg overflow-hidden shadow-sm">
                   <div className="p-4 border-b">
                     <h3 className="font-semibold">Tópicos em alta</h3>
@@ -139,7 +134,7 @@ export default function Index() {
             
             {/* Main Feed */}
             <div className="w-full lg:w-2/4">
-              {isLoggedIn && (
+              {user && (
                 <div className="mb-6 p-4 bg-card rounded-lg shadow-sm">
                   <div className="flex items-center gap-3">
                     <Button className="flex-1 justify-start text-muted-foreground gap-2 bg-secondary hover:bg-secondary/80 border">
@@ -291,13 +286,6 @@ export default function Index() {
           </div>
         </div>
       </footer>
-      
-      {/* Auth Modal */}
-      <AuthModal 
-        isOpen={showAuthModal} 
-        onClose={() => setShowAuthModal(false)}
-        onSuccess={handleLoginSuccess}
-      />
       
       {/* Scroll to top button */}
       <button
